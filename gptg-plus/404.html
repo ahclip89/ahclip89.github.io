@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>404 — GPTG+</title>
+<style>
+  :root{
+    --purple:#4b1f9f;
+    --bg:#0b0720;
+    --card: rgba(255,255,255,0.04);
+    --accent:#ffd166;
+    --glass: rgba(255,255,255,0.04);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;color:#eaf0ff;background:linear-gradient(180deg,#060316 0%, #0b0720 100%)}
+  .wrap{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:28px;
+    padding:40px 20px;
+    text-align:center;
+  }
+
+  /* animated header */
+  h1{font-size:42px;margin:0 0 6px 0;letter-spacing:1px}
+  p{margin:0;color:rgba(234,240,255,0.9);opacity:.9}
+
+  /* card */
+  .card{
+    width:100%;
+    max-width:980px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:18px;
+    padding:28px;
+    box-shadow: 0 6px 30px rgba(18,10,40,0.6);
+    display:flex;
+    gap:28px;
+    align-items:center;
+    justify-content:space-between;
+    backdrop-filter: blur(6px) saturate(120%);
+  }
+  @media (max-width:900px){ .card{flex-direction:column;padding:24px} }
+
+  /* left column (visual) */
+  .visual{width:360px;height:240px;position:relative;display:flex;align-items:center;justify-content:center}
+  @media (max-width:900px){ .visual{width:100%; height:220px} }
+
+  /* animated blob */
+  .blob-svg{width:320px;height:200px}
+  /* subtle floating motion */
+  .float{ animation: floaty 5s ease-in-out infinite; transform-origin: center; }
+  @keyframes floaty{
+    0% { transform: translateY(0px) rotate(-2deg) scale(1); }
+    50% { transform: translateY(-8px) rotate(2deg) scale(1.02); }
+    100% { transform: translateY(0px) rotate(-2deg) scale(1); }
+  }
+
+  /* tiny particle bursts */
+  .particles{ position:absolute; inset:0; pointer-events:none; }
+
+  /* right column (text) */
+  .meta{flex:1; text-align:left}
+  @media (max-width:900px){ .meta{text-align:center} }
+  .meta h2{margin:6px 0 8px 0;font-size:20px;color:var(--accent)}
+  .meta p.small{color:rgba(234,240,255,0.8);margin-bottom:12px}
+
+  .actions{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{
+    border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;
+    background:linear-gradient(90deg,var(--purple), #2e0f6a);color:white;box-shadow:0 6px 18px rgba(75,31,159,0.28);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .btn.secondary{
+    background:transparent;border:1px solid rgba(234,240,255,0.06);color: #dfe9ff;
+    box-shadow:none;font-weight:600;
+  }
+  .btn:active{ transform: translateY(2px); }
+  .btn.ghost{ background: transparent; border-radius:8px; padding:8px 10px; font-weight:600; border:1px solid rgba(234,240,255,0.04)}
+
+  /* footer tiny hint */
+  .hint{margin-top:10px;color:rgba(234,240,255,0.65);font-size:13px}
+
+  /* modal */
+  .modal-backdrop{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(3,2,10,0.6); z-index:60; }
+  .modal{ width: min(680px, 94%); background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:20px;border-radius:12px; box-shadow:0 20px 60px rgba(7,3,20,0.7) }
+  .form-row{ display:flex; gap:10px; margin-bottom:12px }
+  .form-row .field{ flex:1; display:flex; flex-direction:column; gap:8px }
+  input[type="text"], textarea{ background:transparent; border:1px solid rgba(255,255,255,0.06); padding:10px; border-radius:8px; color:inherit; min-height:44px; resize:vertical }
+  textarea{ min-height:120px }
+  .modal .row-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:8px }
+  .close-x{ position:absolute; right:10px; top:10px; cursor:pointer; font-weight:700; color:rgba(255,255,255,0.6) }
+
+  /* small accessible focus */
+  a:focus, button:focus, input:focus, textarea:focus { outline: 3px solid rgba(109,50,213,0.18); outline-offset:2px; border-color: rgba(255,255,255,0.12) }
+
+  /* tiny satisfying micro-anim for the big "404" text */
+  .big404{ font-size:96px; font-weight:900; letter-spacing: -6px; background: linear-gradient(90deg, #fff 0%, #ffd166 100%); -webkit-background-clip: text; color: transparent; display:inline-block;
+    animation: wobble 2.4s ease-in-out infinite; transform-origin:center; }
+  @keyframes wobble{
+    0%{ transform: rotate(-1deg) translateX(-2px) }
+    50%{ transform: rotate(1deg) translateX(2px) }
+    100%{ transform: rotate(-1deg) translateX(-2px) }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="region" aria-labelledby="title">
+      <div class="visual" aria-hidden="true">
+        <!-- SVG blob + glow + floating -->
+        <svg class="blob-svg float" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="animated blob">
+          <defs>
+            <radialGradient id="g1" cx="30%" cy="30%">
+              <stop offset="0%" stop-color="#fff7d8" stop-opacity="1"/>
+              <stop offset="40%" stop-color="#ffd166" stop-opacity="0.95"/>
+              <stop offset="100%" stop-color="#ff8a3d" stop-opacity="0.06"/>
+            </radialGradient>
+            <filter id="blurGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="20" result="b"/>
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- animated morphing path (SMIL) -->
+          <g filter="url(#blurGlow)">
+            <path id="blob" fill="url(#g1)" d="M426 256Q396 312 342 333Q288 354 238 334Q188 314 125 284Q62 254 86 196Q110 138 170 112Q230 86 305 97Q380 108 421 153Q462 198 426 256Z">
+              <animate attributeName="d" dur="7s" repeatCount="indefinite"
+                values="
+                  M426 256Q396 312 342 333Q288 354 238 334Q188 314 125 284Q62 254 86 196Q110 138 170 112Q230 86 305 97Q380 108 421 153Q462 198 426 256Z;
+                  M436 246Q404 292 352 316Q300 340 246 326Q192 312 147 276Q102 240 112 188Q122 136 172 118Q222 100 286 94Q350 88 405 120Q460 152 436 246Z;
+                  M420 262Q392 318 340 334Q288 350 238 336Q188 322 118 296Q48 270 86 200Q124 130 182 118Q240 106 300 108Q360 110 420 150Q480 190 420 262Z;
+                  M426 256Q396 312 342 333Q288 354 238 334Q188 314 125 284Q62 254 86 196Q110 138 170 112Q230 86 305 97Q380 108 421 153Q462 198 426 256Z
+                " />
+            </path>
+          </g>
+
+          <!-- little orbiting circles for extra satisfaction -->
+          <g class="particles" fill="#ffd166" opacity="0.95">
+            <circle cx="480" cy="80" r="5" >
+              <animate attributeName="cy" values="80;20;80" dur="3.8s" repeatCount="indefinite" />
+              <animate attributeName="cx" values="480;520;480" dur="4.5s" repeatCount="indefinite" />
+              <animate attributeName="r" values="4;7;4" dur="3.8s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="520" cy="220" r="4" opacity="0.9">
+              <animate attributeName="cy" values="220;260;220" dur="3.2s" repeatCount="indefinite" />
+              <animate attributeName="cx" values="520;560;520" dur="3.8s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="80" cy="70" r="6" opacity="0.95">
+              <animate attributeName="cy" values="70;100;70" dur="4.2s" repeatCount="indefinite" />
+              <animate attributeName="cx" values="80;40;80" dur="5s" repeatCount="indefinite" />
+            </circle>
+          </g>
+        </svg>
+      </div>
+
+      <div class="meta">
+        <div style="display:flex;align-items:center;gap:18px;justify-content:space-between">
+          <div>
+            <div id="title" class="big404">404</div>
+            <h1 style="margin-top:6px">Page not found</h1>
+          </div>
+        </div>
+
+        <h2>Uh-oh — this page took a wrong turn</h2>
+        <p class="small">Either the URL is broken, or the thing you were looking for moved to another dimension. No sweat — you can head back home or request the feature you wanted below.</p>
+
+        <div class="actions" style="margin-top:14px">
+          <button class="btn" id="homeBtn" title="Go home">Back Home</button>
+          <button class="btn secondary" id="featureBtn" title="Request a feature">Request a feature</button>
+          <a class="btn ghost" href="#" id="reportBtn" title="Report this issue">Report this issue</a>
+        </div>
+
+        <div class="hint">Tip: If you think this should exist, request it and we might add it. Promise we read the good ones.</div>
+      </div>
+    </div>
+
+    <div style="max-width:980px;color:rgba(234,240,255,0.75);font-size:14px">
+      <small>Try checking the URL, or go back to the homepage.</small>
+    </div>
+  </div>
+
+  <!-- Modal for feature request -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div style="position:relative;">
+        <div class="close-x" id="closeModal" aria-label="close">✕</div>
+        <h3 id="modalTitle" style="margin:0 0 6px 0">Request a feature</h3>
+        <p style="margin:0 0 12px 0;color:rgba(234,240,255,0.85)">Fill this out and we’ll open an email in your mail app so you can send it. Keep it short & spicy.</p>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="name">Your name (optional)</label>
+          <input id="name" type="text" placeholder="like: Anden">
+        </div>
+        <div class="field">
+          <label for="subject">Feature title</label>
+          <input id="subject" type="text" placeholder="Short title (e.g. 'Add scoreboard')">
+        </div>
+      </div>
+
+      <div style="margin-top:6px">
+        <label for="desc">Describe the feature</label>
+        <textarea id="desc" placeholder="What should it do? Why? Any UI ideas?"></textarea>
+      </div>
+
+      <div class="row-actions">
+        <button class="btn secondary" id="cancel">Cancel</button>
+        <button class="btn" id="sendFeature">Open email</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Home button: go up one level or to index
+  document.getElementById('homeBtn').addEventListener('click', () => {
+    // prefer root index
+    window.location.href = '/';
+  });
+
+  // open modal
+  const modal = document.getElementById('modal');
+  document.getElementById('featureBtn').addEventListener('click', () => {
+    modal.style.display = 'flex';
+    document.getElementById('subject').focus();
+  });
+  document.getElementById('closeModal').addEventListener('click', closeModal);
+  document.getElementById('cancel').addEventListener('click', closeModal);
+  function closeModal(){ modal.style.display='none'; }
+
+  // send: open mail client with prefilled subject/body using mailto
+  document.getElementById('sendFeature').addEventListener('click', () => {
+    const name = document.getElementById('name').value.trim();
+    const subj = document.getElementById('subject').value.trim() || 'Feature request';
+    const desc = document.getElementById('desc').value.trim() || '(no description)';
+
+    const fullBody =
+`Feature request from ${name || 'anonymous'}:
+
+${desc}
+
+(Submitted from local 404 page)`;
+
+    // encode
+    const mailto = `mailto:you@yourdomain.invalid?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(fullBody)}`;
+    // open mail client
+    window.location.href = mailto;
+    // close modal
+    modal.style.display = 'none';
+  });
+
+  // quick "report this issue" — opens new email prefilled
+  document.getElementById('reportBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    const body = encodeURIComponent('I found a broken link or 404 on: ' + window.location.href + '\n\nPlease fix it!');
+    window.location.href = `mailto:you@yourdomain.invalid?subject=${encodeURIComponent('Broken link report')}&body=${body}`;
+  });
+
+  // keyboard escape to close
+  window.addEventListener('keydown', (ev) => {
+    if(ev.key === 'Escape') closeModal();
+  });
+
+  // small progressive enhancement: if the user has no mail client, copy to clipboard fallback
+  function openMailFallback(mailto) {
+    try {
+      window.location.href = mailto;
+      // note: browsers usually handle this
+    } catch (err) {
+      navigator.clipboard?.writeText(decodeURIComponent(mailto.replace(/^mailto:[^?]*\?body=/,''))).then(() => {
+        alert('Email content copied to clipboard. Paste it into your mail client.');
+      }).catch(()=> {
+        alert('Could not open mail client. Please copy your request manually.');
+      });
+    }
+  }
+
+  // accessibility: trap focus inside modal while open (basic)
+  modal.addEventListener('keydown', (e) => {
+    if(e.key === 'Tab') {
+      const focusables = modal.querySelectorAll('input, textarea, button, [tabindex]:not([tabindex="-1"])');
+      if(!focusables.length) return;
+      const first = focusables[0], last = focusables[focusables.length-1];
+      if(e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+</script>
+</body>
+</html>

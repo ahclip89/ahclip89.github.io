@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Canvas</title>
+    <!-- Load Tailwind CSS for utility classes -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the app container and canvas */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Container for the drawing area */
+        #drawing-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* The main canvas where drawing occurs */
+        #drawing-canvas {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            border-radius: 1rem;
+            cursor: crosshair;
+            touch-action: none; /* Prevents default mobile scroll/zoom behavior */
+        }
+
+        /* Styling for the control panel, making it float and centered */
+        #controls {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        /* Custom button styling with smooth animation */
+        .control-button {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Springy transition */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-button.active {
+            transform: scale(0.95);
+            background-color: #3b82f6 !important; /* Blue for active state */
+            color: white;
+        }
+
+        /* Styling for the color swatches */
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 9999px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.15s, border 0.15s;
+        }
+
+        .color-swatch.active {
+            transform: scale(1.2);
+            border-color: #3b82f6; /* Blue border for active color */
+        }
+
+        /* Custom styling for the range slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 16px;
+            width: 16px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            margin-top: -6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            background: #d1d5db;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        /* Custom color input styling to match the theme */
+        #custom-color-input {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            transition: transform 0.15s;
+        }
+
+        #custom-color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        #custom-color-input::-webkit-color-swatch {
+            border: none;
+        }
+        #custom-color-input.active {
+            transform: scale(1.2);
+            border: 3px solid #3b82f6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header and Controls Section -->
+    <div id="controls" class="bg-white p-4 shadow-xl border-b border-gray-200">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-4">
+            
+            <!-- Tool Selection (Pen/Eraser/Clear) -->
+            <div class="flex space-x-2 p-2 bg-gray-100 rounded-xl shadow-inner">
+                <button id="tool-pen" data-tool="pen" class="control-button active px-4 py-2 bg-white text-gray-700 rounded-lg font-medium text-sm transition-colors duration-150">
+                    <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    Pen
+                </button>
+                <button id="tool-eraser" data-tool="eraser" class="control-button px-4 py-2 bg-white text-gray-700 rounded-lg font-medium text-sm transition-colors duration-150">
+                    <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Eraser
+                </button>
+                <button id="tool-clear" class="control-button px-4 py-2 bg-red-500 text-white rounded-lg font-medium text-sm hover:bg-red-600 transition-colors duration-150">
+                    <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Clear All
+                </button>
+            </div>
+
+            <!-- Color Selection -->
+            <div class="flex items-center space-x-3 p-2 bg-gray-100 rounded-xl shadow-inner">
+                <span class="text-sm text-gray-600 font-medium hidden sm:block">Color:</span>
+                <div class="color-swatch active" style="background-color: #000000;" data-color="#000000"></div>
+                <div class="color-swatch" style="background-color: #ef4444;" data-color="#ef4444"></div>
+                <div class="color-swatch" style="background-color: #22c55e;" data-color="#22c55e"></div>
+                <div class="color-swatch" style="background-color: #3b82f6;" data-color="#3b82f6"></div>
+                <div class="color-swatch" style="background-color: #8b5cf6;" data-color="#8b5cf6"></div>
+                
+                <!-- Custom Color Picker -->
+                <label for="custom-color-input" class="relative block rounded-full">
+                    <input type="color" id="custom-color-input" value="#ff8800" title="Custom Color">
+                </label>
+            </div>
+
+            <!-- Thickness Presets and Slider -->
+            <div class="flex items-center space-x-4 p-2 bg-gray-100 rounded-xl shadow-inner">
+                <span class="text-sm text-gray-600 font-medium hidden sm:block">Thickness:</span>
+                
+                <!-- Presets -->
+                <div class="flex space-x-2">
+                    <button data-thickness="2" class="control-button thickness-preset p-1 bg-white rounded-full"><div class="w-2 h-2 bg-gray-700 rounded-full"></div></button>
+                    <button data-thickness="5" class="control-button thickness-preset active p-1 bg-white rounded-full"><div class="w-3 h-3 bg-gray-700 rounded-full"></div></button>
+                    <button data-thickness="10" class="control-button thickness-preset p-1 bg-white rounded-full"><div class="w-4 h-4 bg-gray-700 rounded-full"></div></button>
+                    <button data-thickness="20" class="control-button thickness-preset p-1 bg-white rounded-full"><div class="w-5 h-5 bg-gray-700 rounded-full"></div></button>
+                </div>
+
+                <!-- Slider -->
+                <div class="w-32 flex flex-col items-center">
+                    <input type="range" id="thickness-slider" min="1" max="50" value="5" class="w-full">
+                    <span id="thickness-value" class="text-xs text-gray-500 mt-1">5 px</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Drawing Area -->
+    <div id="drawing-area">
+        <canvas id="drawing-canvas"></canvas>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('drawing-canvas');
+            const ctx = canvas.getContext('2d');
+            const drawingArea = document.getElementById('drawing-area');
+            
+            // State Variables
+            let isDrawing = false;
+            let currentX = 0;
+            let currentY = 0;
+            let currentColor = '#000000';
+            let currentThickness = 5;
+            let currentTool = 'pen'; // 'pen' or 'eraser'
+            
+            // UI Elements
+            const toolButtons = document.querySelectorAll('[data-tool]');
+            const colorSwatches = document.querySelectorAll('.color-swatch');
+            const thicknessPresets = document.querySelectorAll('.thickness-preset');
+            const thicknessSlider = document.getElementById('thickness-slider');
+            const thicknessValueSpan = document.getElementById('thickness-value');
+            const customColorInput = document.getElementById('custom-color-input');
+            const clearButton = document.getElementById('tool-clear');
+
+            // --- Initialization and Setup ---
+
+            /**
+             * Resizes the canvas to fill its container and maintains a fixed ratio
+             */
+            function resizeCanvas() {
+                // Get the dimensions of the parent div
+                const parentWidth = drawingArea.offsetWidth - 40; // 40px padding total
+                const parentHeight = drawingArea.offsetHeight - 40;
+                
+                // Set the canvas dimensions
+                canvas.width = parentWidth;
+                canvas.height = parentHeight;
+
+                // Set initial canvas style and context defaults
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Re-apply drawing settings
+                applyDrawingSettings();
+            }
+
+            /**
+             * Applies the current drawing settings to the context.
+             */
+            function applyDrawingSettings() {
+                ctx.lineWidth = currentThickness;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                if (currentTool === 'pen') {
+                    ctx.strokeStyle = currentColor;
+                    ctx.globalCompositeOperation = 'source-over'; // Default drawing mode
+                } else if (currentTool === 'eraser') {
+                    // Eraser works by drawing transparent color over existing content
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.strokeStyle = 'rgba(0,0,0,1)'; // Color doesn't matter for destination-out
+                }
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas(); // Initial resize
+
+            // --- Utility Functions for Coordinates ---
+            
+            /**
+             * Gets the coordinates of the mouse or touch event relative to the canvas.
+             * @param {Event} e - Mouse or Touch event.
+             * @returns {{x: number, y: number}} - Coordinates relative to the canvas.
+             */
+            function getCanvasCoordinates(e) {
+                const rect = canvas.getBoundingClientRect();
+                let clientX, clientY;
+
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else if (e.clientX !== undefined) {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                } else {
+                    return { x: currentX, y: currentY }; // Fallback
+                }
+                
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+
+            // --- Drawing Event Handlers ---
+
+            /**
+             * Starts a drawing stroke.
+             * @param {Event} e - Mouse or Touch event.
+             */
+            function startDrawing(e) {
+                // Prevent scrolling/zooming on mobile devices during drawing
+                e.preventDefault(); 
+                isDrawing = true;
+                
+                const { x, y } = getCanvasCoordinates(e);
+                currentX = x;
+                currentY = y;
+                
+                applyDrawingSettings();
+
+                // Draw a small dot immediately for clicks/taps
+                ctx.beginPath();
+                ctx.moveTo(currentX, currentY);
+                ctx.lineTo(currentX, currentY);
+                ctx.stroke();
+            }
+
+            /**
+             * Draws a segment of the stroke.
+             * @param {Event} e - Mouse or Touch event.
+             */
+            function draw(e) {
+                if (!isDrawing) return;
+                
+                const { x, y } = getCanvasCoordinates(e);
+
+                ctx.beginPath();
+                ctx.moveTo(currentX, currentY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                
+                currentX = x;
+                currentY = y;
+            }
+
+            /**
+             * Ends the current drawing stroke.
+             */
+            function stopDrawing() {
+                if (!isDrawing) return;
+                isDrawing = false;
+                // Path must be closed to prevent unintended line connections later
+                ctx.beginPath();
+            }
+
+            // Mouse Events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', stopDrawing); // Listen on window to catch drags outside canvas
+
+            // Touch Events (for mobile responsiveness)
+            canvas.addEventListener('touchstart', startDrawing);
+            canvas.addEventListener('touchmove', draw);
+            window.addEventListener('touchend', stopDrawing);
+
+            // --- UI Control Handlers ---
+
+            // Tool Selector
+            toolButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tool = button.getAttribute('data-tool');
+                    if (tool === 'clear') {
+                        // Clear the entire canvas
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        // Redraw white background for visual clarity
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        return;
+                    }
+
+                    currentTool = tool;
+                    
+                    // Update active state visuals
+                    toolButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    applyDrawingSettings();
+                });
+            });
+
+            // Color Swatch Selector
+            colorSwatches.forEach(swatch => {
+                swatch.addEventListener('click', () => {
+                    currentColor = swatch.getAttribute('data-color');
+                    
+                    // Update active state visuals
+                    colorSwatches.forEach(s => s.classList.remove('active'));
+                    customColorInput.classList.remove('active');
+                    swatch.classList.add('active');
+
+                    applyDrawingSettings();
+                });
+            });
+
+            // Custom Color Picker
+            customColorInput.addEventListener('input', (e) => {
+                currentColor = e.target.value;
+                // Remove active state from swatches and apply to custom color input
+                colorSwatches.forEach(s => s.classList.remove('active'));
+                customColorInput.classList.add('active');
+                
+                applyDrawingSettings();
+            });
+            // Also apply active state when the custom color picker is clicked
+            customColorInput.addEventListener('click', () => {
+                colorSwatches.forEach(s => s.classList.remove('active'));
+                customColorInput.classList.add('active');
+            });
+            // Initial setting for custom color if it matches the current color
+            if (currentColor === '#000000') {
+                customColorInput.value = '#000000';
+            }
+
+
+            // Thickness Presets
+            thicknessPresets.forEach(button => {
+                button.addEventListener('click', () => {
+                    currentThickness = parseInt(button.getAttribute('data-thickness'));
+                    
+                    // Update active state visuals for presets
+                    thicknessPresets.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Sync slider with preset value
+                    thicknessSlider.value = currentThickness;
+                    thicknessValueSpan.textContent = `${currentThickness} px`;
+
+                    applyDrawingSettings();
+                });
+            });
+
+            // Thickness Slider
+            thicknessSlider.addEventListener('input', (e) => {
+                currentThickness = parseInt(e.target.value);
+                thicknessValueSpan.textContent = `${currentThickness} px`;
+                
+                // De-activate presets when using the slider for custom thickness
+                thicknessPresets.forEach(btn => btn.classList.remove('active'));
+
+                applyDrawingSettings();
+            });
+            
+            // Set the initial state for UI elements
+            document.querySelector(`[data-tool="${currentTool}"]`).classList.add('active');
+            document.querySelector(`[data-thickness="${currentThickness}"]`).classList.add('active');
+            document.querySelector(`[data-color="${currentColor}"]`).classList.add('active');
+        });
+    </script>
+</body>
+</html>

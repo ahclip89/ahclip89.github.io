@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mini 3D CAD</title>
+<style>
+  body { margin: 0; overflow: hidden; background: #111; }
+  canvas { display: block; cursor: grab; }
+  #ui { position: absolute; top: 10px; left: 10px; color: #0ff; font-family: monospace; }
+  button { margin-right: 5px; background: #222; color: #0ff; border: 1px solid #0ff; padding: 5px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="ui">
+  <button id="addCube">Add Cube</button>
+  <span id="info">Select a cube by clicking it</span>
+</div>
+<canvas id="canvas"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const cw = canvas.width/2, ch = canvas.height/2;
+
+// CAD variables
+let cubes = [];
+let selectedCube = null;
+const cubeSize = 50;
+let rotX = 0, rotY = 0;
+let zoom = 500;
+let mouseDown = false;
+let lastX, lastY;
+let dragCube = false;
+
+// Cube definition
+const cubeVerts = [
+  [-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],
+  [-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]
+];
+const cubeEdges = [
+  [0,1],[1,2],[2,3],[3,0],
+  [4,5],[5,6],[6,7],[7,4],
+  [0,4],[1,5],[2,6],[3,7]
+];
+
+// Rotate vertex
+function rotate(vertex, ax, ay){
+  let [x,y,z] = vertex;
+  let cosX=Math.cos(ax), sinX=Math.sin(ax);
+  let y1 = y*cosX - z*sinX;
+  let z1 = y*sinX + z*cosX;
+  let cosY=Math.cos(ay), sinY=Math.sin(ay);
+  let x2 = x*cosY + z1*sinY;
+  let z2 = -x*sinY + z1;
+  return [x2,y1,z2];
+}
+
+// Project 3D to 2D
+function project([x,y,z]){
+  const scale = zoom / (zoom + z);
+  return {x: x*cubeSize*scale + cw, y: y*cubeSize*scale + ch, scale};
+}
+
+// Draw cube
+function drawCube(c){
+  let projected = cubeVerts.map(v => {
+    const p = rotate([v[0]+c.x/cubeSize, v[1]+c.y/cubeSize, v[2]+c.z/cubeSize], rotX, rotY);
+    return project(p);
+  });
+  ctx.strokeStyle = c===selectedCube?'#f0f':'#0ff';
+  ctx.lineWidth = 2;
+  cubeEdges.forEach(([i,j])=>{
+    ctx.beginPath();
+    ctx.moveTo(projected[i].x, projected[i].y);
+    ctx.lineTo(projected[j].x, projected[j].y);
+    ctx.stroke();
+  });
+}
+
+// Check if mouse is over cube (simple AABB in screen space)
+function hitTest(c, mx, my){
+  let projected = cubeVerts.map(v => {
+    const p = rotate([v[0]+c.x/cubeSize, v[1]+c.y/cubeSize, v[2]+c.z/cubeSize], rotX, rotY);
+    return project(p);
+  });
+  let xs = projected.map(p=>p.x);
+  let ys = projected.map(p=>p.y);
+  return mx>=Math.min(...xs) && mx<=Math.max(...xs) && my>=Math.min(...ys) && my<=Math.max(...ys);
+}
+
+// Mouse events
+canvas.addEventListener('mousedown', e=>{
+  mouseDown=true;
+  lastX=e.clientX;
+  lastY=e.clientY;
+  dragCube=false;
+
+  // Check selection
+  for(let i=cubes.length-1;i>=0;i--){
+    if(hitTest(cubes[i], e.clientX, e.clientY)){
+      selectedCube=cubes[i];
+      dragCube=true;
+      return;
+    }
+  }
+  selectedCube=null;
+});
+
+canvas.addEventListener('mouseup', ()=>{
+  mouseDown=false;
+  dragCube=false;
+});
+
+canvas.addEventListener('mousemove', e=>{
+  const dx = e.clientX-lastX;
+  const dy = e.clientY-lastY;
+  if(mouseDown){
+    if(dragCube && selectedCube){
+      // Move cube in XY plane relative to view
+      selectedCube.x += dx/2;
+      selectedCube.y += dy/2;
+    } else {
+      // Rotate view
+      rotY += dx*0.01;
+      rotX += dy*0.01;
+    }
+  }
+  lastX=e.clientX;
+  lastY=e.clientY;
+});
+
+canvas.addEventListener('wheel', e=>{
+  zoom += e.deltaY;
+  if(zoom<50) zoom=50;
+  if(zoom>2000) zoom=2000;
+});
+
+// Add cube button
+document.getElementById('addCube').addEventListener('click', ()=>{
+  cubes.push({x:0, y:0, z:0});
+});
+
+// Render loop
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  cubes.forEach(c=>drawCube(c));
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+window.addEventListener('resize', ()=>{
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+});
+</script>
+</body>
+</html>

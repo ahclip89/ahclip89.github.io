@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>3D Maze Runner — Yellow Coin Dots</title>
+<style>
+  :root{--bg:#0b1020;--panel:rgba(255,255,255,0.06);--accent:#ffd166;--muted:#98a8c7}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071029 0%, #0b1020 100%);font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+  .wrap{display:grid;grid-template-columns:1fr 260px;gap:12px;height:100vh;padding:12px;box-sizing:border-box;}
+  canvas{width:100%;height:100%;display:block;background:linear-gradient(#103048,#061323);}
+  .sidebar{width:260px;background:var(--panel);border-radius:12px;padding:12px;box-sizing:border-box;color:#e6eef8;display:flex;flex-direction:column;gap:12px}
+  h1{margin:0;font-size:18px;color:var(--accent);letter-spacing:0.6px}
+  .hud{display:flex;gap:8px;align-items:center;justify-content:space-between}
+  .stat{background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;min-width:0}
+  .muted{color:var(--muted);font-size:13px}
+  .controls{font-size:13px;color:#cfe7ff;line-height:1.5}
+  label{font-size:13px;color:var(--muted)}
+  .mini{background:rgba(255,255,255,0.03);height:220px;border-radius:8px;position:relative;overflow:hidden;padding:8px}
+  #minimap{position:absolute;left:8px;top:8px;image-rendering:pixelated}
+  .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:#dff;cursor:pointer}
+  .footer{margin-top:auto;font-size:12px;color:var(--muted)}
+  .finish{position:fixed;inset:0;background:linear-gradient(rgba(2,6,12,0.6),rgba(2,6,12,0.9));display:none;align-items:center;justify-content:center;z-index:200}
+  .finish .card{background:#07111b;padding:24px;border-radius:12px;color:#eaf6ff;text-align:center;min-width:320px}
+  .big{font-size:32px;color:var(--accent);margin:6px 0}
+  .small{font-size:14px;color:var(--muted)}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr;grid-auto-rows:1fr;} .sidebar{width:auto;order:2;height:320px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <canvas id="view"></canvas>
+
+  <div class="sidebar">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h1>3D Maze Runner</h1>
+      <div class="muted">v1.1</div>
+    </div>
+
+    <div class="hud">
+      <div class="stat">
+        <div class="muted">Time</div>
+        <div id="time" style="font-weight:700">00:00:00.000</div>
+      </div>
+      <div class="stat">
+        <div class="muted">Coins</div>
+        <div id="coins" style="font-weight:700">0</div>
+      </div>
+      <div class="stat">
+        <div class="muted">Score</div>
+        <div id="score" style="font-weight:700">0</div>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">Maze size (odd):</label>
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <input id="size" type="number" min="9" max="101" step="2" value="25" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#eaf6ff">
+        <button class="btn" id="regen">Generate</button>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">Player</label>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <label style="display:flex;flex-direction:column;gap:6px">
+          <span class="muted">FOV</span>
+          <input id="fov" type="range" min="30" max="110" value="70">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px">
+          <span class="muted">Speed</span>
+          <input id="movespeed" type="range" min="1" max="6" value="3">
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <label class="muted">Controls</label>
+      <div class="controls">
+        Move: W A S D or arrow keys<br>
+        Look: mouse (click canvas to capture) or Left/Right arrows<br>
+        Pause: Esc<br>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="showMinimap">Toggle Minimap</button>
+      <button class="btn" id="randomizeCoins">New coins</button>
+    </div>
+
+    <div class="mini" id="minimapWrap" style="display:block">
+      <canvas id="minimap" width="220" height="220"></canvas>
+    </div>
+
+    <div class="footer">Coins = glowing yellow dots in the 3D view. Click the canvas and move to collect 'em.</div>
+  </div>
+</div>
+
+<div class="finish" id="finish">
+  <div class="card">
+    <div class="small">Maze complete!</div>
+    <div class="big" id="finalTime">00:00:00.000</div>
+    <div class="small" id="finalCoins">Coins: 0</div>
+    <div class="small" id="finalMultiplier">Multiplier: x1</div>
+    <div style="margin-top:12px">
+      <button id="playAgain" class="btn">Play Again</button>
+      <button id="closeFinish" class="btn" style="margin-left:8px">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // elements
+  const canvas = document.getElementById('view');
+  const ctx = canvas.getContext('2d');
+  const minimapCanvas = document.getElementById('minimap');
+  const mmCtx = minimapCanvas.getContext('2d');
+  const timeEl = document.getElementById('time');
+  const coinsEl = document.getElementById('coins');
+  const scoreEl = document.getElementById('score');
+  const sizeInput = document.getElementById('size');
+  const regenBtn = document.getElementById('regen');
+  const fovInput = document.getElementById('fov');
+  const movespeedInput = document.getElementById('movespeed');
+  const showMinimapBtn = document.getElementById('showMinimap');
+  const minimapWrap = document.getElementById('minimapWrap');
+  const randomizeCoinsBtn = document.getElementById('randomizeCoins');
+  const finishDiv = document.getElementById('finish');
+  const finalTimeEl = document.getElementById('finalTime');
+  const finalCoinsEl = document.getElementById('finalCoins');
+  const finalMultEl = document.getElementById('finalMultiplier');
+  const playAgainBtn = document.getElementById('playAgain');
+  const closeFinishBtn = document.getElementById('closeFinish');
+
+  // sizing
+  function fitCanvas(){
+    if (window.innerWidth >= 900) {
+      canvas.width = Math.max(300, window.innerWidth - 12 - 260 - 12);
+      canvas.height = Math.max(200, window.innerHeight - 24);
+    } else {
+      canvas.width = Math.max(300, window.innerWidth - 24);
+      canvas.height = Math.max(200, window.innerHeight - 340);
+    }
+  }
+  fitCanvas();
+  window.addEventListener('resize', fitCanvas);
+
+  // game state
+  let cols = 25, rows = 25;
+  let grid = [];
+  let player = { x:1.5, y:1.5, dir:0 };
+  let fov = 70 * Math.PI/180;
+  let keys = {};
+  let coins = new Set();
+  const baseCoinValue = 100;
+  let coinsCollected = 0;
+  let totalCoins = 0;
+  let startTime = null;
+  let finished = false;
+  let showMinimap = true;
+  let moveSpeedSetting = 3;
+  let requestId = null;
+
+  function idx(r,c){ return r*cols + c; }
+  function inBounds(r,c){ return r>=0 && c>=0 && r<rows && c<cols; }
+
+  // maze generator
+  function generateMaze(n){
+    if (n % 2 === 0) n += 1;
+    cols = rows = n;
+    const map = new Array(rows*cols).fill(1);
+    for(let r=1;r<rows;r+=2) for(let c=1;c<cols;c+=2) map[idx(r,c)] = 0;
+    const stack = [[1,1]];
+    const visited = new Set(['1,1']);
+    const dirs = [[-2,0],[2,0],[0,-2],[0,2]];
+    while(stack.length){
+      const [r,c] = stack[stack.length-1];
+      const neighbors = [];
+      for(const [dr,dc] of dirs){
+        const nr=r+dr, nc=c+dc;
+        if(nr>0 && nr<rows && nc>0 && nc<cols && !visited.has(`${nr},${nc}`)) neighbors.push([nr,nc,dr,dc]);
+      }
+      if(neighbors.length){
+        const ni = Math.floor(Math.random()*neighbors.length);
+        const [nr,nc,dr,dc] = neighbors[ni];
+        const wr = r + dr/2, wc = c + dc/2;
+        map[idx(wr,wc)] = 0;
+        visited.add(`${nr},${nc}`);
+        stack.push([nr,nc]);
+      } else stack.pop();
+    }
+    return map;
+  }
+
+  function placeCoins(map, percent=0.06){
+    coins.clear();
+    const candidates = [];
+    for(let r=1;r<rows-1;r++){
+      for(let c=1;c<cols-1;c++){
+        if(map[idx(r,c)] === 0){
+          if(r===1 && c===1) continue;
+          if(r===rows-2 && c===cols-2) continue;
+          candidates.push([r,c]);
+        }
+      }
+    }
+    const count = Math.max(3, Math.floor(candidates.length * percent));
+    for(let i=0;i<count;i++){
+      if(candidates.length===0) break;
+      const j = Math.floor(Math.random()*candidates.length);
+      const [r,c] = candidates.splice(j,1)[0];
+      coins.add(`${r},${c}`);
+    }
+    totalCoins = coins.size;
+    coinsCollected = 0;
+    updateHUD();
+  }
+
+  function resetGame(){
+    cancelAnimationFrame(requestId);
+    const n = Math.max(9, Math.min(101, parseInt(sizeInput.value) || 25));
+    cols = rows = (n%2===1? n : n+1);
+    grid = generateMaze(cols);
+    placeCoins(grid);
+    player.x = 1.5; player.y = 1.5; player.dir = 0;
+    coinsCollected = 0;
+    startTime = performance.now();
+    finished = false;
+    fitCanvas();
+    loop(performance.now());
+  }
+
+  // input
+  window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if(e.key==='Escape'){ if(document.pointerLockElement) document.exitPointerLock(); keys={}; }});
+  window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+  canvas.addEventListener('click', () => { canvas.requestPointerLock?.(); });
+  document.addEventListener('mousemove', e => { if(document.pointerLockElement === canvas) player.dir += e.movementX * 0.0025 * (Math.PI/4); });
+
+  // raycaster + draw coins as sprites
+  function castRaysAndDraw(){
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+    // sky + floor
+    const skyGrad = ctx.createLinearGradient(0,0,0,h/2);
+    skyGrad.addColorStop(0, '#cfefff'); skyGrad.addColorStop(1, '#7bb0d7');
+    ctx.fillStyle = skyGrad; ctx.fillRect(0,0,w,h/2);
+    ctx.fillStyle = '#0b1020'; ctx.fillRect(0,h/2,w,h/2);
+
+    const numRays = Math.min(w, 600);
+    const step = fov / numRays;
+    const camX = player.x, camY = player.y, dir = player.dir;
+    const halfH = h/2;
+
+    // precompute depth buffer (per column) for sprite occlusion
+    const depthBuffer = new Array(numRays).fill(Infinity);
+
+    for(let i=0;i<numRays;i++){
+      const rayAngle = dir - fov/2 + i * step;
+      const cos = Math.cos(rayAngle), sin = Math.sin(rayAngle);
+      let distance = 0;
+      let hit = false;
+      while(!hit && distance < 40){
+        distance += 0.02;
+        const rx = camX + cos * distance;
+        const ry = camY + sin * distance;
+        const r = Math.floor(ry + 0.000001);
+        const c = Math.floor(rx + 0.000001);
+        if(!inBounds(r,c)){ hit = true; distance = 40; break; }
+        if(grid[idx(r,c)] === 1){ hit = true; break; }
+      }
+      const corrected = distance * Math.cos((dir - rayAngle));
+      depthBuffer[i] = corrected;
+      const wallH = Math.min(h*2, (1 / Math.max(corrected,0.0001)) * (h*0.9));
+      let shade = Math.max(0.2, 1 - corrected/10);
+      const wallColor = `rgba(${Math.floor(200*shade)}, ${Math.floor(200*shade)}, ${Math.floor(220*shade)}, 1)`;
+      const x = Math.floor(i * (w/numRays));
+      const colW = Math.ceil(w/numRays)+1;
+      ctx.fillStyle = wallColor;
+      ctx.fillRect(x, halfH - wallH/2, colW, wallH);
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = `rgba(0,0,0,${Math.min(0.35, corrected/20)})`;
+      ctx.fillRect(x, halfH - wallH/2, colW, wallH);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // draw coins as sprites (sorted far -> near)
+    const spriteList = [];
+    for(const s of coins){
+      const [r,c] = s.split(',').map(Number);
+      // coin center
+      const cx = c + 0.5, cy = r + 0.5;
+      const dx = cx - camX, dy = cy - camY;
+      const dist = Math.hypot(dx, dy);
+      const angleTo = Math.atan2(dy, dx);
+      let rel = angleTo - dir;
+      // normalize to -PI..PI
+      while(rel <= -Math.PI) rel += Math.PI*2;
+      while(rel > Math.PI) rel -= Math.PI*2;
+      const halfFov = fov/2;
+      if(Math.abs(rel) > halfFov) continue; // offscreen
+      spriteList.push({s, r, c, cx, cy, dist, rel});
+    }
+    // sort by distance descending
+    spriteList.sort((a,b) => b.dist - a.dist);
+
+    for(const sp of spriteList){
+      const {cx, cy, dist, rel} = sp;
+      // screen x
+      const screenX = Math.floor((0.5 + (rel / fov)) * w);
+      // size projection (similar to wall height)
+      const proj = (1 / Math.max(dist, 0.0001)) * (h * 0.9);
+      const size = Math.max(6, Math.min(h*0.6, proj * 0.18)); // adjust scale for dot-size
+      // determine column range this sprite covers for occlusion check
+      // approximate which ray column corresponds to sprite center
+      const numRays = Math.min(w, 600);
+      const rayIdx = Math.floor((screenX / w) * numRays);
+      // if sprite is behind wall at that column (depthBuffer), skip
+      if(rayIdx >= 0 && rayIdx < depthBuffer.length && dist * Math.cos(rel) > depthBuffer[rayIdx] - 0.001) {
+        // occluded by wall
+        continue;
+      }
+      // draw glowing yellow dot
+      const gradient = ctx.createRadialGradient(screenX, halfH, Math.max(1,size*0.15), screenX, halfH, size);
+      gradient.addColorStop(0, 'rgba(255,250,180,1)');
+      gradient.addColorStop(0.3, 'rgba(255,220,90,0.95)');
+      gradient.addColorStop(0.6, 'rgba(255,190,60,0.6)');
+      gradient.addColorStop(1, 'rgba(255,170,40,0)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(screenX, halfH, size, 0, Math.PI*2);
+      ctx.fill();
+
+      // small bright core
+      ctx.fillStyle = 'rgba(255,245,180,0.95)';
+      ctx.beginPath();
+      ctx.arc(screenX, halfH, Math.max(2, size*0.28), 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // crosshair
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillRect(Math.floor(w/2)-2, Math.floor(h/2)-12, 4, 24);
+    ctx.fillRect(Math.floor(w/2)-12, Math.floor(h/2)-2, 24, 4);
+  }
+
+  // minimap
+  function drawMini(){
+    const mmW = minimapCanvas.width, mmH = minimapCanvas.height;
+    mmCtx.clearRect(0,0,mmW,mmH);
+    const cellPixels = Math.floor(Math.min(mmW/cols, mmH/rows));
+    const offsetX = Math.floor((mmW - cellPixels*cols)/2);
+    const offsetY = Math.floor((mmH - cellPixels*rows)/2);
+    mmCtx.fillStyle = '#07111b'; mmCtx.fillRect(0,0,mmW,mmH);
+
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const val = grid[idx(r,c)];
+        mmCtx.fillStyle = val === 1 ? '#07202a' : '#0b2531';
+        mmCtx.fillRect(offsetX + c*cellPixels, offsetY + r*cellPixels, cellPixels, cellPixels);
+      }
+    }
+
+    // coins
+    for(const s of coins){
+      const [r,c] = s.split(',').map(Number);
+      mmCtx.fillStyle = '#ffd166';
+      const cx = offsetX + c*cellPixels + cellPixels/2;
+      const cy = offsetY + r*cellPixels + cellPixels/2;
+      mmCtx.beginPath();
+      mmCtx.arc(cx,cy, Math.max(2,cellPixels*0.28), 0, Math.PI*2);
+      mmCtx.fill();
+    }
+
+    // exit
+    mmCtx.fillStyle = '#6effa6';
+    mmCtx.fillRect(offsetX + (cols-2)*cellPixels + cellPixels*0.15, offsetY + (rows-2)*cellPixels + cellPixels*0.15, cellPixels*0.7, cellPixels*0.7);
+
+    // player
+    mmCtx.fillStyle = '#9fd7ff';
+    const px = offsetX + Math.floor(player.x*cellPixels);
+    const py = offsetY + Math.floor(player.y*cellPixels);
+    mmCtx.beginPath();
+    mmCtx.arc(px,py, Math.max(3,cellPixels*0.35), 0, Math.PI*2);
+    mmCtx.fill();
+
+    mmCtx.strokeStyle = '#9fd7ff';
+    mmCtx.beginPath();
+    mmCtx.moveTo(px,py);
+    const dx = Math.cos(player.dir) * cellPixels * 1.2;
+    const dy = Math.sin(player.dir) * cellPixels * 1.2;
+    mmCtx.lineTo(px+dx,py+dy);
+    mmCtx.stroke();
+  }
+
+  function updateHUD(){
+    coinsEl.textContent = coinsCollected + " / " + totalCoins;
+    const elapsed = (performance.now() - startTime) / 1000;
+    const mult = computeMultiplier(elapsed);
+    const score = Math.floor(coinsCollected * baseCoinValue * mult);
+    scoreEl.textContent = score;
+  }
+
+  function formatTime(ms){
+    const totalMs = Math.max(0, ms);
+    const hours = Math.floor(totalMs / 3600000);
+    const minutes = Math.floor((totalMs % 3600000) / 60000);
+    const seconds = Math.floor((totalMs % 60000) / 1000);
+    const millis = Math.floor(totalMs % 1000);
+    return `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}.${String(millis).padStart(3,'0')}`;
+  }
+
+  function computeMultiplier(elapsedSeconds){
+    if(elapsedSeconds < (rows * cols) / 80) return 3.0;
+    if(elapsedSeconds < (rows * cols) / 40) return 1.75;
+    if(elapsedSeconds < (rows * cols) / 20) return 1.25;
+    return 1.0;
+  }
+
+  // movement & collisions
+  function step(dt){
+    if(finished) return;
+    if(keys['arrowleft'] || keys['q']) player.dir -= 1.5 * dt;
+    if(keys['arrowright'] || keys['e']) player.dir += 1.5 * dt;
+    const speed = (moveSpeedSetting/3) * 3 * dt;
+    let moveX = 0, moveY = 0;
+    if(keys['w'] || keys['arrowup']) { moveX += Math.cos(player.dir) * speed; moveY += Math.sin(player.dir) * speed; }
+    if(keys['s'] || keys['arrowdown']) { moveX -= Math.cos(player.dir) * speed; moveY -= Math.sin(player.dir) * speed; }
+    if(keys['a']) { moveX += Math.cos(player.dir - Math.PI/2) * speed; moveY += Math.sin(player.dir - Math.PI/2) * speed; }
+    if(keys['d']) { moveX += Math.cos(player.dir + Math.PI/2) * speed; moveY += Math.sin(player.dir + Math.PI/2) * speed; }
+    const nextX = player.x + moveX;
+    const nextY = player.y + moveY;
+    const radius = 0.2;
+    const checkPositions = [
+      [nextY, nextX],
+      [nextY - radius, nextX - radius],
+      [nextY - radius, nextX + radius],
+      [nextY + radius, nextX - radius],
+      [nextY + radius, nextX + radius],
+    ];
+    let blocked = false;
+    for(const [ny,nx] of checkPositions){
+      const r = Math.floor(ny);
+      const c = Math.floor(nx);
+      if(!inBounds(r,c) || grid[idx(r,c)] === 1){ blocked = true; break; }
+    }
+    if(!blocked){ player.x = nextX; player.y = nextY; }
+    else {
+      const nextXOnly = player.x + moveX;
+      const rX = Math.floor(player.y);
+      const cX = Math.floor(nextXOnly);
+      if(inBounds(rX,cX) && grid[idx(rX,cX)]===0) player.x = nextXOnly;
+      const nextYOnly = player.y + moveY;
+      const rY = Math.floor(nextYOnly);
+      const cY = Math.floor(player.x);
+      if(inBounds(rY,cY) && grid[idx(rY,cY)]===0) player.y = nextYOnly;
+    }
+
+    // coin collection
+    const pr = Math.floor(player.y + 0.000001), pc = Math.floor(player.x + 0.000001);
+    const key = `${pr},${pc}`;
+    if(coins.has(key)){
+      coins.delete(key);
+      coinsCollected++;
+      updateHUD();
+    }
+
+    // exit
+    if(pr === rows-2 && pc === cols-2) finish();
+  }
+
+  function finish(){
+    if(finished) return;
+    finished = true;
+    const elapsedMs = performance.now() - startTime;
+    const elapsedS = elapsedMs / 1000;
+    const mult = computeMultiplier(elapsedS);
+    const finalScore = Math.floor(coinsCollected * baseCoinValue * mult);
+    finalTimeEl.textContent = formatTime(elapsedMs);
+    finalCoinsEl.textContent = `Coins: ${coinsCollected} / ${totalCoins}`;
+    finalMultEl.textContent = `Multiplier: x${mult.toFixed(2)}`;
+    updateHUD();
+    finishDiv.style.display = 'flex';
+  }
+
+  let lastTime = performance.now();
+  function loop(now){
+    requestId = requestAnimationFrame(loop);
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
+    if(!startTime) startTime = performance.now();
+    if(!finished){
+      const elapsedMs = performance.now() - startTime;
+      timeEl.textContent = formatTime(elapsedMs);
+    }
+    moveSpeedSetting = parseFloat(movespeedInput.value);
+    fov = parseFloat(fovInput.value) * Math.PI/180;
+    step(dt);
+    castRaysAndDraw();
+    if(showMinimap) drawMini();
+    updateHUD();
+  }
+
+  // UI
+  regenBtn.addEventListener('click', () => { resetGame(); });
+  fovInput.addEventListener('input', () => { fov = parseFloat(fovInput.value)*Math.PI/180; });
+  movespeedInput.addEventListener('input', () => { moveSpeedSetting = parseFloat(movespeedInput.value); });
+  showMinimapBtn.addEventListener('click', () => { showMinimap = !showMinimap; minimapWrap.style.display = showMinimap ? 'block' : 'none'; });
+  randomizeCoinsBtn.addEventListener('click', () => { placeCoins(grid); coinsCollected = 0; updateHUD(); });
+  playAgainBtn.addEventListener('click', () => { finishDiv.style.display='none'; resetGame(); });
+  closeFinishBtn.addEventListener('click', () => { finishDiv.style.display='none'; });
+
+  // initial spawn
+  resetGame();
+
+  // little hint
+  window.addEventListener('keydown', (e) => { if(e.key.toLowerCase() === 'h'){ alert('Click canvas to capture mouse. WASD to move. Collect yellow dots (coins).'); } });
+
+})();
+</script>
+</body>
+</html>

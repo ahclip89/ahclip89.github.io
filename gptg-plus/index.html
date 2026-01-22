@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GPTG+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    :root {
+        --purple: #4b1f9f;
+        --bg-dark: #0b0b0d;
+        --bg-light: #f5f5ff;
+        --text-dark: #ffffff;
+        --text-light: #000000;
+    }
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: var(--bg-dark);
+        color: var(--text-dark);
+        transition: 0.3s ease;
+    }
+
+    body.light {
+        background: var(--bg-light);
+        color: var(--text-light);
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 20px;
+        gap: 12px;
+        background: var(--purple);
+        color: white;
+    }
+
+    /* GPT-style swirl logo */
+    .logo svg {
+        width: 55px;
+        height: 55px;
+        animation: spin 6s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .title {
+        font-size: 48px;
+        font-weight: 800;
+        letter-spacing: 2px;
+    }
+
+    main {
+        max-width: 900px;
+        margin: auto;
+        padding: 30px;
+    }
+
+    .about {
+        font-size: 20px;
+        line-height: 1.5;
+        margin-bottom: 35px;
+        padding: 20px;
+        border-left: 6px solid var(--purple);
+        background: rgba(255,255,255,0.05);
+    }
+    body.light .about {
+        background: rgba(0,0,0,0.05);
+    }
+
+    .grid {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .item {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 16px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.05);
+        transition: 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+    }
+    body.light .item {
+        background: rgba(0,0,0,0.05);
+    }
+
+    .item:hover {
+        transform: scale(1.03);
+        background: rgba(255,255,255,0.12);
+    }
+
+    /* Vector icon animations */
+    .thumb svg {
+        width: 60px;
+        height: 60px;
+        animation: float 2.2s ease-in-out infinite alternate;
+    }
+    @keyframes float {
+        from { transform: translateY(0px); }
+        to { transform: translateY(-6px); }
+    }
+
+    .prompt-box {
+        margin-top: 45px;
+        padding: 18px;
+        font-size: 14px;
+        opacity: 0.7;
+        white-space: pre-line;
+        border-top: 1px solid rgba(255,255,255,0.3);
+    }
+    body.light .prompt-box {
+        border-top: 1px solid rgba(0,0,0,0.3);
+    }
+
+    /* Light/Dark toggle */
+    #toggle {
+        appearance: none;
+        width: 55px;
+        height: 28px;
+        border-radius: 20px;
+        background: #ddd;
+        position: relative;
+        outline: none;
+        cursor: pointer;
+    }
+    #toggle:checked {
+        background: #333;
+    }
+    #toggle::before {
+        content: "";
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: 0.2s;
+    }
+    #toggle:checked::before {
+        transform: translateX(27px);
+    }
+</style>
+
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <!-- GPT swirl vector -->
+        <svg viewBox="0 0 100 100">
+            <path fill="white" d="
+            M50 5
+            A45 45 0 1 1 5 50
+            A45 45 0 0 1 50 5
+            " opacity="0.2"/>
+            <path fill="white" d="
+            M50 15
+            A35 35 0 1 1 15 50
+            A35 35 0 0 1 50 15
+            "/>
+        </svg>
+    </div>
+    <div class="title">GPTG+</div>
+    <input type="checkbox" id="toggle">
+</header>
+
+<main>
+    <div class="about">
+        Welcome to <b>GPTG+</b> — a collection of AI-powered mini-games, tools, and experiments.
+        Everything here is handcrafted by different AIs, fused together into one chaotic (but fun)
+        playground. Dive in, explore, and absolutely vibe.
+    </div>
+
+    <div class="grid">
+
+        <!-- Maze -->
+        <a class="item" href="maze.html">
+            <div class="thumb">
+                <svg viewBox="0 0 100 100">
+                    <rect x="10" y="10" width="80" height="80" fill="#ffe44d" stroke="black" stroke-width="6"/>
+                    <path d="M20 20 H80 V80 H20 Z" fill="none" stroke="black" stroke-width="6"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size:22px;">Maze</div>
+                <div>A maze game made by ChatGPT.</div>
+            </div>
+        </a>
+
+        <!-- Tests -->
+        <a class="item" href="tests/">
+            <div class="thumb">
+                <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="35" fill="#ffe44d" stroke="black" stroke-width="6"/>
+                    <text x="50" y="60" font-size="36" fill="black" text-anchor="middle">?</text>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size:22px;">Tests</div>
+                <div>Just some AI tests.</div>
+            </div>
+        </a>
+
+        <!-- Draw: Copiolet -->
+        <a class="item" href="draw/copiolet.html">
+            <div class="thumb">
+                <svg viewBox="0 0 100 100">
+                    <rect x="20" y="20" width="60" height="60" fill="#ffe44d" stroke="black" stroke-width="6"/>
+                    <line x1="20" y1="80" x2="80" y2="20" stroke="black" stroke-width="6"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size:22px;">Draw: Copiolet</div>
+                <div>A drawing app made by Microsoft Copiolet.</div>
+            </div>
+        </a>
+
+        <!-- Draw: Gemini -->
+        <a class="item" href="draw/gemini.html">
+            <div class="thumb">
+                <svg viewBox="0 0 100 100">
+                    <circle cx="35" cy="50" r="18" fill="#ffe44d" stroke="black" stroke-width="6"/>
+                    <circle cx="65" cy="50" r="18" fill="#ffe44d" stroke="black" stroke-width="6"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size:22px;">Draw: Gemini</div>
+                <div>A drawing app made by Google Gemini.</div>
+            </div>
+        </a>
+
+        <!-- Draw: GPT -->
+        <a class="item" href="draw/gpt.html">
+            <div class="thumb">
+                <svg viewBox="0 0 100 100">
+                    <polygon points="50,15 80,50 50,85 20,50" fill="#ffe44d" stroke="black" stroke-width="6"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size:22px;">Draw: GPT</div>
+                <div>A drawing app made by ChatGPT.</div>
+            </div>
+        </a>
+
+        <!-- Draw: VSCode -->
+        <a class="item" href="draw/vscode.html">
+            <div class="thumb">
+                <svg viewBox="0 0 100 100">
+                    <polygon points="20,30 50,10 80,30 80,70 50,90 20,70" fill="#ffe44d" stroke="black" stroke-width="6"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size:22px;">Draw: VSCode</div>
+                <div>A drawing app made by VSCode Copiolet.</div>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- Show the prompt -->
+    <div class="prompt-box">
+Make an HTML program for a 3d maze game with a built-in maze generator. Add coins, and depending on how long it took them to complete it, add multipliers. Also, display a stopwatch showing how long they have spent in the maze.
+
+make the coins visible yellow dods
+
+im making a game website called GPTG+. pls make a home page linking to these relative file paths, descriptions, and names formated like [fille path] "Name" "Description". Anything in parentheses is a note for you so dont put it in the website:
+
+maze.html "Maze" "A maze game made by ChatGPT."
+tests/index.html "Tests" "Just some AI tests." (because its index.html, just go to tests/)
+draw/copiolet.html "Draw: Copiolet" "A drawing app made by Microsoft Copiolet."
+draw/gemini.html "Draw: Gemini" "A drawing app made by Google Gemini."
+draw/gpt.html "Draw: GPT" "A drawing app made by ChatGPT."
+draw/vscode.html "Draw: VSCode" "A drawing app made by VSCode Copiolet."
+
+Also pls make vecter thumbnails for everything, animations, an about us section above the buttons filled with whatever you want. Also show this prompt at the bottom of the page. Add a dark and light mode toggle, and, to top it all off, add a Chat GPT-inspired vector logo in the top right followed by in big bold text "GPTG+". Make the theme color a deep purple.
+    </div>
+
+</main>
+
+<script>
+    const toggle = document.getElementById("toggle");
+    toggle.addEventListener("change", () => {
+        document.body.classList.toggle("light");
+    });
+</script>
+
+</body>
+</html>
