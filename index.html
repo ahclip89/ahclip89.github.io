@@ -1,21 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Games</title>
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title>Anden Hendricks</title>
+    <link rel="icon" href="assets/photos/icon.png">
     <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="header">
-        <h1>Games</h1>
-    </div>
+  </head>
+  <body>
+
+    <div class="display"></div>
+
+    <div style="height: 180px;"></div>
     
-    <div class="button_menue">
-        <a href="arcade_shooter/game.html" class="button">Arcade Shooter</a>
-        <a href="guy/game.html" class="button">Guy</a>
-        <a href="caseoh/" class="button">Get CASEOH to Town</a>
-        <a href="gptg-plus" class="button">AI</a>
+    <div class="page" id="selection_page">
     </div>
-</body>
+
+    <div class="selected" id="open_page">
+        <div class="close" onclick="close_tile(this)">X</div>
+        <iframe src="pages/blank.html" frameborder="0"></iframe>
+    </div>
+
+    <div class="header">
+        <h1>Anden Hendricks</h1>
+        <h3>Engineering Portfolio</h3>
+    </div>
+
+  <footer>
+    <p>Copyright &copy; 2026 Anden Hendricks. All rights reserved.</p>
+    <div class="footer_links">
+        <div class="contact" style="display: flex; flex-direction: column;">
+          <h4>Contact: </h4>
+          <p style="margin: 0; font-size: smaller;">
+            Email: <a href="mailto:ah1017205@mypusd.org">ah1017205@mypusd.org</a><br>
+          </p>
+        </div>
+        <div class="links" style="display: flex; flex-direction: column;">
+          <h4>Find me on: </h4>
+          <p style="margin: 0; font-size: smaller;">
+            GitHub: <a href="https://github.com/ahclip89" target="_blank">ahclip89</a><br>
+            Itch.io: <a href="https://itch.io/profile/ahclip89" target="_blank">ahclip89</a>
+          </p>
+        </div>
+        <div class="legacy_games" style="display: flex; flex-direction: column;">
+          <h4>Legacy Games Site: </h4>
+          <p style="margin: 0; font-size: smaller;">
+            Old Games Site: <a href="https://ahclip89.github.io/games/" target="_blank">Old Games Site</a>
+          </p>
+        </div>
+    </div>
+  </footer>
+
+    <script src="script.js"></script>
+  </body>
 </html>

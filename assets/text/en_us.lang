@@ -1,0 +1,79 @@
+{
+    "tiles": [
+        {
+            "title": "About Me",
+            "description": "Hello, I am Anden Hendricks, and I am a proud student at Harmony Magnet Academy.  I joined this school in 2025 so I could be a part of its Engineering Program.  I am currently a freshman and will be graduating in the spring of 2029.",
+            "image": {
+                    "src": "assets/photos/anden.jpg",
+                    "alt": "Anden Hendricks"
+            },
+            "page": "about_me.html"
+        },
+        {
+            "title": "Resume",
+            "description": "This is where I will put my future resume.",
+            "image": {
+                    "src": "",
+                    "alt": "Resume"
+            }
+        },
+        {
+            "title": "Letter(s) of Recommendation",
+            "description": "This is where I will put my letters of recommendation.",
+            "image": {
+                    "src": "",
+                    "alt": "Letter(s) of Recommendation"
+            }
+        },
+        {
+            "title": "Internships",
+            "description": "This is where I will put my internship experiences.",
+            "image": {
+                    "src": "",
+                    "alt": "Internships"
+            }
+        },
+        {
+            "title": "Community Service",
+            "description": "This is where I will put my community service experiences.",
+            "image": {
+                    "src": "",
+                    "alt": "Community Service"
+            }
+        },
+        {
+            "title": "Graduate Outcomes",
+            "description": "These are my 8 projects designed to prepare me for my future after high school.  They each match one of PUSD's graduate outcomes and are designed to help me develop skills in those areas.  The 8 PUSD graduate outcomes are: Critical Thinking, Cultural Awareness, Technical Skills, Communication, Adaptability, Creativity, Leadership, and Self-Direction.",
+            "image": {
+                    "src": "assets/photos/gradoutcomesbanner.png",
+                    "alt": "Graduate Outcomes"
+            },
+            "page": "grad_out.html"
+        }, 
+        {
+            "title": "Certifications & Awards",
+            "description": "This is where I will put my certifications and awards.",
+            "image": {
+                    "src": "",
+                    "alt": "Certifications & Awards"
+            }
+        },
+        {
+            "title": "Activities",
+            "description": "This is where I will put my activities.",
+            "image": {
+                    "src": "",
+                    "alt": "Activities"
+            }
+        },
+        {
+            "title": "Programming Projects",
+            "description": "This website was hand-programmed by me in HTML, CSS, and JavaScript.  I will continue to update it with new projects throughout the year.  Here you will find a collection of things I have programmed.",
+            "image": {
+                    "src": "",
+                    "alt": "Programming Projects"
+            },
+            "page": "programing.html"
+        }
+    ]
+}

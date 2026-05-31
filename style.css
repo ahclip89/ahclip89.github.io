@@ -1,38 +1,287 @@
 body {
-    background: linear-gradient(147deg,rgba(0, 4, 71, 1) 0%, rgba(48, 0, 0, 1) 100%);
-    background-attachment: fixed;
+    background: #000000;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
-a.button {
-    padding: 20px 30px;
-    border: 1px outset 10;
-    border-radius: 3px;
-    color: #000000;
-    background-color: #f0f0f0;
-    text-decoration: none;
-    font-family: Arial, sans-serif;
-    font-size: 30px;
-    text-align: center;
+body.framed-page {
+    background: transparent;
+    overflow: hidden;
+    margin: 0;
 }
 
-a.button:hover {
-    background-color: #e0e0e0;
+iframe {
+    border: none;
+    background-color: transparent;
+    overflow: hidden;
 }
 
-div.button_menue {
-    display: flex;
-    flex-direction: column;
-    justify-self: center;
-    gap: 10px;
-    width: max-content;
+* {  
+    color: #ffffff;
+    font-family: "Exo 2", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: normal;
+}
+
+div.page {
+    position: relative;
+    width: 96vw;
+    left: 2vw;
+    display: grid;
+    grid-template-columns: 30vw 30vw 30vw;
+    justify-content: center;
+    gap: 20px;
+}
+
+div.sub_page {
+    position: relative;
+    width: 96vw;
+    left: 1.5vw;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    gap: 20px;
 }
 
 div.header {
+    position: fixed;
+    top: 20px;
+    left: 2vw;
+    width: 96vw;
     text-align: center;
     margin-bottom: 20px;
-    background: linear-gradient(147deg,rgba(0, 13, 255, 1) 0%, rgba(255, 0, 0, 1) 100%);
-    color: #ffffff;
-    padding: 10px 0;
-    border: 5px outset white;
+    background: #108882;
+    color: #000000;
+    padding: 10px 0px;
     border-radius: 20px;
+}
+
+div.tile {
+    text-align: center;
+    width: 28vw;
+    height: 300px;
+    display: flex;
+    margin-bottom: 20px;
+    background: #3b3b3b;
+    padding: 10px 20px;
+    border-radius: 20px;
+    scale: 1;
+    animation-name: shrink;
+    animation-duration: 0.2s;
+    cursor: pointer;
+}
+
+div.sub_tile {
+    text-align: center;
+    max-width: 750px;
+    max-height: 300px;
+    min-width: 500px;
+    min-height: 300px;
+    display: flex;
+    margin-bottom: 20px;
+    background: #2d2d2d;
+    padding: 10px 20px;
+    border-radius: 20px;
+    scale: 1;
+    animation-name: sub_shrink;
+    animation-duration: 0.2s;
+}
+
+div.selected {
+    visibility: hidden;
+    position: fixed;
+    width: 90vw;
+    height: 75vh;
+    top: 20vh;
+    left: 4.35vw;
+    text-align: center;
+    display: flex;
+    margin-bottom: 20px;
+    background: #005763;
+    padding: 10px 20px;
+    border-radius: 20px;
+    scale: 1;
+}
+
+div.selected iframe {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: transparent;
+}
+
+div.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background: #811414;
+    border-radius: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    animation-name: x_shrink;
+    animation-duration: 0.2s;
+}
+
+div.close:hover {
+    background: #ff0000;
+    scale: 1.2;
+    animation-name: x_grow;
+    animation-duration: 0.2s;
+}
+
+div.tile:hover {
+    background: #005763;
+    scale: 1.02;
+    animation-name: grow;
+    animation-duration: 0.2s;
+}
+
+div.sub_tile:hover {
+    background: #616161;
+    scale: 1.02;
+    animation-name: sub_grow;
+    animation-duration: 0.2s;
+}
+
+img {
+    padding: 20px;
+}
+
+footer {
+    width: 100vw;
+    text-align: center;
+    background: #108882;
+    color: #000000;
+    padding: 10px 0px;
+}
+
+div.contact {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+}
+
+div.footer_links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+
+div.sub {
+    position: relative;
+    width: 96vw;
+    left: 1.5vw;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: left;
+    gap: 20px;
+}
+
+.open {
+    animation-name: full_grow;
+    animation-duration: 0.5s;
+}
+
+.closed {
+    animation-name: full_shrink;
+    animation-duration: 0.5s;
+}
+
+
+
+#swap {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    width: 60px;
+    height: 40px;
+    border-radius: 20%;
+    background: #108882;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.5s;
+    animation-name: swap_shrink;
+    animation-duration: 0.2s;
+    cursor: pointer;
+}
+
+#swap:hover {
+    background: #0b615d;
+    scale: 1.2;
+    animation-name: swap_grow;
+    animation-duration: 0.2s;
+}
+
+
+/* animations */
+
+@keyframes grow {
+    from{scale: 1; background: #3b3b3b;}
+    to{scale: 1.02; background: #005763;}
+}
+
+@keyframes shrink {
+    from{scale: 1.02; background: #005763;}
+    to{scale: 1; background: #3b3b3b;}
+}
+
+@keyframes sub_grow {
+    from{scale: 1; background: #2d2d2d;}
+    to{scale: 1.02; background: #616161;}
+}
+
+@keyframes sub_shrink {
+    from{scale: 1.02; background: #616161;}
+    to{scale: 1; background: #2d2d2d;}
+}
+
+@keyframes x_grow {
+    from{scale: 1; background: #811414;}
+    to{scale: 1.2; background: #ff0000;}
+}
+
+@keyframes x_shrink {
+    from{scale: 1.2; background: #ff0000;}
+    to{scale: 1; background: #811414;}
+}
+
+@keyframes swap_grow {
+    from{scale: 1; background: #108882;}
+    to{scale: 1.2; background: #0b615d;}
+}
+
+@keyframes swap_shrink {
+    from{scale: 1.2; background: #0b615d;}
+    to{scale: 1; background: #108882;}
+}
+
+@keyframes full_grow{
+    from{display: flex; width: 0px; height: 0px; top: 100vw; left: 2vw; visibility: hidden; background: #3b3b3b;}
+    to{display: flex;  width: 90vw; height: 75vh; top: 20vh; left: 4.35vw; visibility: visible; background: #005763;}
+}
+
+@keyframes full_shrink{
+    from{display: flex; width: 90vw; height: 75vh; top: 20vh; left: 4.35vw; visibility: visible; background: #005763;}
+    to{display: flex; width: 0px; height: 0px; top: 100vw; left: 2vw; visibility: hidden; background: #3b3b3b;}
+}
+
+@keyframes next {
+    from{right: 5px;}
+    to{right: -60px;}
+}
+
+@keyframes back {
+    from{right: -60px;}
+    to{right: 5px;}
 }
