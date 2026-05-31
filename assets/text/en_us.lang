@@ -70,7 +70,7 @@
             "title": "Programming Projects",
             "description": "This website was hand-programmed by me in HTML, CSS, and JavaScript.  I will continue to update it with new projects throughout the year.  Here you will find a collection of things I have programmed.",
             "image": {
-                    "src": "",
+                    "src": "assets/photos/programming.png",
                     "alt": "Programming Projects"
             },
             "page": "programing.html"
